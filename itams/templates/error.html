@@ -1,0 +1,8 @@
+{% extends 'base.html' %}{% block title %}{{title}} · IT Asset Management{% endblock %}{% block content %}
+<section class="panel narrow error-page">
+  <div class="error-code">{{error_code or ('404' if title=='Page Not Found' else '500' if title=='Something Went Wrong' else '400')}}</div>
+  <h1>{{title}}</h1>
+  <p>{{message}}</p>
+  <div><a class="btn" href="{{url_for('main.dashboard')}}">Return to Dashboard</a> <button class="btn secondary" type="button" onclick="history.back()">Go Back</button></div>
+</section>
+{%endblock%}

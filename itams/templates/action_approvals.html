@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-title">
+  <div>
+    <h1>{{'Location Action Approvals' if approval_mode else 'My Requests'}}</h1>
+    <p>{{'Review submitted fields for your permitted location before approving or rejecting.' if approval_mode else 'Open a request to review what you submitted and track the decision.'}}</p>
+  </div>
+</div>
+<section class="panel table-wrap">
+  <table>
+    <thead><tr><th>Request</th><th>Location</th><th>Requested Action</th><th>Reason</th><th>Status</th><th>Review</th></tr></thead>
+    <tbody>
+      {% for item in requests %}
+      <tr>
+        <td><b>#{{item.id}}</b><br><small>{{item.requested_by}} · {{item.created_at|local_datetime}}</small></td>
+        <td>{{item.location.name if item.location else 'Not specified'}}</td>
+        <td><strong>{{action_label(item.action)}}</strong></td>
+        <td>{{item.reason or 'Not specified'}}</td>
+        <td>
+          <span class="badge {{item.status|lower}}">{{item.status}}</span>
+          {% if item.reviewed_by %}<br><small>{{item.reviewed_by}} · {{item.reviewed_at|local_datetime}}<br>{{item.review_notes}}</small>{% endif %}
+        </td>
+        <td><a class="btn secondary" href="{{url_for('operations.action_request_detail',request_id=item.id)}}">View Submitted Form</a></td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6">No requests found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endblock %}

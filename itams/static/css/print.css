@@ -1,0 +1,12 @@
+@page{margin:14mm}
+*{box-shadow:none!important;text-shadow:none!important}
+html,body{background:#fff!important;color:#111!important;font:10pt/1.4 Arial,sans-serif}
+aside,.topbar,.nav-overlay,.toast-region,footer,.profile-nav,.quick-create,.skip-link,.breadcrumb,.toast,.report-print-note,.page-title .btn,.page-title button,.table-tools,.pagination,form:not(.print-include),dialog{display:none!important}
+main{margin:0!important;padding:0!important}.content{max-width:none!important;padding:0!important}
+.print-brand{display:block!important;border-bottom:2px solid #76b82a;margin:0 0 12mm;padding-bottom:4mm}.print-brand .product-name strong{color:#203f78!important}.print-brand .product-name small{color:#526071!important}
+.page-title:before{display:none}.page-title{display:block;margin-bottom:8mm}.page-title h1{font-size:20pt;color:#203f78!important}
+.panel,.card,.table-wrap{background:#fff!important;border:1px solid #bbb!important;break-inside:avoid}.panel{padding:5mm;margin-bottom:5mm}
+table{width:100%;font-size:8.5pt}th{position:static;background:#e8edf4!important;color:#111!important}th,td{padding:2.2mm;border:1px solid #ccc}
+a{color:#111!important;text-decoration:none}.badge{border:1px solid #777!important;background:#fff!important;color:#111!important}
+.grid,.split{display:block}.grid>.panel,.split>.panel{break-inside:auto}.qr-card img{width:38mm!important}
+.timeline article{break-inside:avoid}

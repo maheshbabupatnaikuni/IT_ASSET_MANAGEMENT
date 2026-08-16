@@ -1,0 +1,107 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "ITAMS: Create Environment",
+      "type": "process",
+      "command": "python",
+      "args": ["-m", "venv", ".venv"],
+      "problemMatcher": []
+    },
+    {
+      "label": "ITAMS: Upgrade Pip",
+      "type": "process",
+      "command": "${workspaceFolder}\\.venv\\Scripts\\python.exe",
+      "args": ["-m", "pip", "install", "--upgrade", "pip"],
+      "problemMatcher": []
+    },
+    {
+      "label": "ITAMS: Install Dependencies",
+      "type": "process",
+      "command": "${workspaceFolder}\\.venv\\Scripts\\python.exe",
+      "args": ["-m", "pip", "install", "-r", "requirements.txt", "-r", "requirements-dev.txt"],
+      "problemMatcher": []
+    },
+    {
+      "label": "ITAMS: Reset Data",
+      "type": "process",
+      "command": "${workspaceFolder}\\.venv\\Scripts\\python.exe",
+      "args": ["reset_data.py"],
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "ITAMS_ALLOW_EPHEMERAL_SECRET": "true"
+        }
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "ITAMS: Setup IT Asset Management",
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "ITAMS: Create Environment",
+        "ITAMS: Upgrade Pip",
+        "ITAMS: Install Dependencies",
+        "ITAMS: Reset Data"
+      ],
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "ITAMS: Run IT Asset Management",
+      "type": "process",
+      "command": "${workspaceFolder}\\.venv\\Scripts\\python.exe",
+      "args": ["run_app.py"],
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "ITAMS_ALLOW_EPHEMERAL_SECRET": "true",
+          "ITAMS_PUBLIC_BASE_URL": "http://localhost:5000"
+        }
+      },
+      "dependsOn": "ITAMS: Reset Data",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      }
+    },
+    {
+      "label": "ITAMS: Test",
+      "type": "process",
+      "command": "${workspaceFolder}\\.venv\\Scripts\\python.exe",
+      "args": ["-m", "pytest", "-q"],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "ITAMS: Verify Release",
+      "type": "process",
+      "command": "${workspaceFolder}\\.venv\\Scripts\\python.exe",
+      "args": ["tools\\verify_release.py"],
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "ITAMS_ALLOW_EPHEMERAL_SECRET": "true"
+        }
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "ITAMS: Release Audit",
+      "type": "process",
+      "command": "${workspaceFolder}\\.venv\\Scripts\\python.exe",
+      "args": ["tools\\release_audit.py"],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    }
+  ]
+}

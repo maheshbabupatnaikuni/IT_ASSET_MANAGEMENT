@@ -1,0 +1,26 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "IT Asset Management",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}\\run_app.py",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "preLaunchTask": "ITAMS: Reset Data",
+      "serverReadyAction": {
+        "pattern": "Open: (http://127\\.0\\.0\\.1:[0-9]+)",
+        "uriFormat": "%s",
+        "action": "openExternally"
+      },
+      "env": {
+        "ITAMS_ALLOW_EPHEMERAL_SECRET": "true",
+        "ITAMS_PUBLIC_BASE_URL": "http://127.0.0.1:5000",
+        "ITAMS_OPEN_BROWSER": "false",
+        "PYTHONUNBUFFERED": "1"
+      }
+    }
+  ]
+}

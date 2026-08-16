@@ -1,0 +1,10 @@
+from .main import bp as main_bp
+from .auth import bp as auth_bp
+from .masters import bp as masters_bp
+from .assets import bp as assets_bp
+from .operations import bp as operations_bp
+from .reports import bp as reports_bp
+from .admin import bp as admin_bp
+from .requests import bp as requests_bp
+from .infrastructure import bp as infrastructure_bp
+from .public import bp as public_bp

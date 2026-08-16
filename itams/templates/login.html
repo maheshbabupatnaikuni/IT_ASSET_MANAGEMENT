@@ -1,0 +1,44 @@
+{% from "_ui_macros.html" import product_brand %}
+<!doctype html>
+<html lang="en" data-theme="system">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>{{app_setting('ui.application_name','IT Asset Management')}} - Sign in</title>
+  <link rel="icon" href="{{url_for('static',filename='img/itams-mark.svg')}}">
+  <script>document.documentElement.dataset.theme=localStorage.getItem("itams-theme")||"system";</script>
+  <link rel="stylesheet" href="{{url_for('static',filename='css/app.css')}}">
+  <link rel="stylesheet" href="{{url_for('static',filename='css/design-system.css')}}?v=20260729-6">
+</head>
+<body class="login">
+  <main class="login-shell">
+    <section class="login-form-panel">
+      <form method="post" class="login-card" autocomplete="off">
+        <div class="login-centered-brand">
+          {{product_brand()}}
+        </div>
+        <div class="login-form-heading">
+          <h2>{{app_setting('ui.login_heading','Welcome to ITAMS')}}</h2>
+        </div>
+        <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+        <input type="hidden" name="next" value="{{next_url or ''}}">
+        <label for="username">Username</label>
+        <input id="username" type="text" name="username" required autofocus autocomplete="username" spellcheck="false" placeholder="Enter your username">
+        <label for="login-password">Password</label>
+        <div class="password-field">
+          <input id="login-password" type="password" name="password" required autocomplete="current-password" placeholder="Enter your password">
+          <button type="button" class="password-toggle" data-password-toggle aria-controls="login-password" aria-pressed="false">Show</button>
+        </div>
+        <button class="login-submit" type="submit">Sign in securely</button>
+        <div class="login-help"><span aria-hidden="true">i</span><small>Use the administrator credentials supplied with this local installation.</small></div>
+        <div class="login-version">Version {{app_version}}</div>
+        <div class="login-messages" aria-live="polite">
+          {%with messages=get_flashed_messages(with_categories=true)%}{%for cat,msg in messages%}<div class="flash {{cat}}" role="alert">{{msg}}</div>{%endfor%}{%endwith%}
+        </div>
+      </form>
+    </section>
+  </main>
+  <script src="{{url_for('static',filename='js/app.js')}}" defer></script>
+</body>
+</html>

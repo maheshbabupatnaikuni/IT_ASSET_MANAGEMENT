@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-title"><div><h1>Asset QR Management</h1><p>Permission-controlled QR generation and image regeneration for all assets.</p></div></div>
+<div class="cards">
+  <div class="card"><b>{{assets|length}}</b><span>Total Assets</span></div>
+  <div class="card"><b>{{missing}}</b><span>Missing QR Images</span></div>
+</div>
+<section class="panel">
+  <h3>Configured Asset Profile Base URL</h3>
+  <p><code>{{base_url or 'Not configured'}}</code></p>
+  <p>Changing this value requires image regeneration. Permanent asset references remain unchanged.</p>
+</section>
+<form method="post" class="panel" id="bulkQrForm">
+  <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+  <div class="form-grid">
+    <label class="wide">Regeneration Reason<textarea name="reason" placeholder="Required for selected/all image regeneration"></textarea></label>
+    <div class="wide">
+      <button name="action" value="generate_missing">Generate Missing QR Codes</button>
+      <button name="action" value="regenerate_selected" onclick="return confirm('Regenerate the selected QR images while keeping their current identities?')">Regenerate Selected QR Codes</button>
+      <button class="secondary" name="action" value="regenerate_all" onclick="return confirm('Regenerate every QR image while keeping all current identities and links?')">Regenerate All QR Images</button>
+    </div>
+  </div>
+  <div class="table-wrap"><table><thead><tr><th><input type="checkbox" aria-label="Select all" onclick="document.querySelectorAll('.qr-select').forEach(x=>x.checked=this.checked)"></th><th>Reference</th><th>Asset Tag</th><th>Asset Status</th><th>QR Status</th><th>Profile</th></tr></thead>
+  <tbody>{%for asset in assets%}<tr><td><input class="qr-select" type="checkbox" name="asset_ids" value="{{asset.id}}" aria-label="Select {{asset.display_reference}}"></td><td>{{asset.display_reference}}</td><td>{{asset.display_asset_tag or 'Not Available'}}</td><td>{{asset.status}}</td><td>{{'Missing' if not asset.id in qr_ready_ids else 'Active'}}</td><td><a href="{{url_for('assets.profile',system_asset_reference=asset.system_asset_reference)}}">Open Profile</a></td></tr>{%else%}<tr><td colspan="6">No assets found.</td></tr>{%endfor%}</tbody></table></div>
+</form>
+{% endblock %}

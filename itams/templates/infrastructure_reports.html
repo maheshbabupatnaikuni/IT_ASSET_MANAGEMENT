@@ -1,0 +1,5 @@
+{% extends 'base.html' %}{% block content %}
+<div class="page-title"><div><h1>{{title}}</h1><p>Generated {{generated_at.strftime('%d %b %Y %I:%M:%S %p')}}</p></div><div>{%if can('infrastructure.export')%}<a class="btn" href="{{url_for('infrastructure.reports',kind=kind,format='excel')}}">Download Excel</a>{%endif%}</div></div>
+<section class="panel"><div class="report-tabs"><a class="btn secondary" href="{{url_for('infrastructure.reports',kind='summary')}}">Infrastructure Summary</a> <a class="btn secondary" href="{{url_for('infrastructure.reports',kind='verification')}}">Verification Report</a> <a class="btn secondary" href="{{url_for('infrastructure.reports',kind='location')}}">Location Wise Report</a></div></section>
+<section class="panel table-wrap"><table><thead><tr>{%for column in columns%}<th>{{column}}</th>{%endfor%}</tr></thead><tbody>{%for row in rows%}<tr>{%for column in columns%}<td>{{row[column] if row[column] not in (none,'') else '-'}}</td>{%endfor%}</tr>{%else%}<tr><td>No records for this report.</td></tr>{%endfor%}</tbody></table></section>
+{% endblock %}

@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% macro select(name,items,current,required=false,allow_other=false) %}
+<select name="{{name}}" {%if required%}required{%endif%} {%if allow_other%}data-allow-other{%endif%}>
+  <option value="">{{'Select' if required else 'Not specified'}}</option>
+  {%for x in items%}<option value="{{x.id}}" {%if current==x.id%}selected{%endif%}>{{x.name}}</option>{%endfor%}
+  {%if allow_other%}<option value="__other__">Other (enter manually)</option>{%endif%}
+</select>
+{%if allow_other%}<input name="{{name}}_other" data-other-input hidden disabled placeholder="Enter another value">{%endif%}
+{%endmacro%}
+{% macro value(field, fallback='') %}{{asset|attr(field) if asset and asset|attr(field) is not none else fallback}}{%endmacro%}
+{% block title %}{{'Edit' if asset else 'Add'}} Asset · IT Asset Management{% endblock %}
+{% block content %}
+<div class="page-title">
+  <div><h1>{{'Edit Asset' if asset else 'Add Asset'}}</h1><p>{{'Update the complete asset master and technical specifications.' if asset else 'Create the asset master. Assignment remains a separate transaction.'}}</p></div>
+  {%if asset%}<a class="btn secondary" href="{{url_for('assets.profile',system_asset_reference=asset.system_asset_reference)}}">Back to Profile</a>{%endif%}
+</div>
+<form method="post" class="panel asset-edit-form">
+  <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+
+  {%if asset%}
+  <section class="form-section workflow-state">
+    <div class="section-heading"><div><h2>Current State</h2><p>Workflow-controlled information is shown for reference and changed through the relevant asset operation.</p></div></div>
+    <div class="details">
+      <div><b>Location Asset Reference</b><span>{{asset.display_reference}}</span></div>
+      <div><b>Status</b><span class="badge {{asset.status|lower|replace(' ','-')}}">{{asset.status}}</span></div>
+      <div><b>Current Employee</b><span>{{asset.employee.name if asset.employee else 'Unassigned'}}</span></div>
+      <div><b>Employee Department</b><span>{{asset.employee.department.name if asset.employee else 'Not assigned'}}</span></div>
+    </div>
+  </section>
+  <section class="form-section">
+    <div class="section-heading"><div><h2>Current Employee Details</h2><p>Update the assigned employee's master information here. Use Transfer Asset to change ownership.</p></div>{%if asset.employee and can('assignment.transfer')%}<a class="btn secondary small" href="{{url_for('operations.transfer')}}">Transfer Asset</a>{%endif%}</div>
+    {%if asset.employee%}
+      {%if can('employee.edit')%}
+      <input type="hidden" name="edit_employee_details" value="1">
+      <div class="form-grid">
+        <label>Employee ID<input name="employee_code" value="{{asset.employee.employee_code}}" required></label>
+        <label>Full Name<input name="employee_name" value="{{asset.employee.name}}" required></label>
+        <label>Designation<input name="employee_designation" value="{{asset.employee.designation or ''}}"></label>
+        <label>Email<input type="email" name="employee_email" value="{{asset.employee.email or ''}}"></label>
+        <label>Phone<input name="employee_phone" value="{{asset.employee.phone or ''}}"></label>
+        <label>Department{{select('employee_department_id',departments,asset.employee.department_id,true,true)}}</label>
+        <label>Location{{select('employee_location_id',locations,asset.employee.location_id,true)}}</label>
+      </div>
+      <div class="employee-state-note"><span class="badge {{'blocked' if asset.employee.blocked else 'active'}}">{{'Blocked' if asset.employee.blocked else asset.employee.employment_status}}</span></div>
+      {%else%}
+      <div class="details">
+        <div><b>Employee ID</b><span>{{asset.employee.employee_code}}</span></div><div><b>Name</b><span>{{asset.employee.name}}</span></div>
+        <div><b>Designation</b><span>{{asset.employee.designation or 'Not Available'}}</span></div><div><b>Email</b><span>{{asset.employee.email or 'Not Available'}}</span></div>
+        <div><b>Phone</b><span>{{asset.employee.phone or 'Not Available'}}</span></div><div><b>Department / Location</b><span>{{asset.employee.department.name}} / {{asset.employee.location.name}}</span></div>
+      </div>
+      <p class="form-help">Your role can view these employee details but does not have the Employee Edit permission.</p>
+      {%endif%}
+    {%else%}
+      <div class="empty-state"><h3>No employee is currently assigned</h3><p>Create an assignment request to allocate this asset. Direct ownership changes are not permitted from Asset Edit.</p>{%if can('assignment.request.create')%}<a class="btn" href="{{url_for('requests.index')}}">Open Assignment Requests</a>{%endif%}</div>
+    {%endif%}
+  </section>
+  {%endif%}
+
+  <section class="form-section">
+    <div class="section-heading"><div><h2>Basic Information</h2><p>Identification and classification details.</p></div></div>
+    <div class="form-grid">
+      <label>Asset Tag<input name="asset_tag" value="{{asset.display_asset_tag if asset else ''}}" placeholder="Company asset tag"></label>
+      <label>Category{{select('category_id',categories,asset.category_id if asset else none,true,true)}}</label>
+      <label>Brand{{select('manufacturer_id',manufacturers,asset.manufacturer_id if asset else none,false,true)}}</label>
+      <label>Model<input name="model" value="{{value('model')}}" placeholder="Model name or number"></label>
+      <label>Serial Number<input name="serial_number" value="{{(asset.source_serial_number or asset.serial_number) if asset else ''}}" placeholder="Manufacturer serial number"></label>
+      <label>Condition<input name="condition" value="{{value('condition','Good')}}" placeholder="Good, Fair, Damaged..."></label>
+    </div>
+  </section>
+
+  <section class="form-section">
+    <div class="section-heading"><div><h2>Technical Specifications</h2><p>Hardware and operating-system information shown on the Asset Profile.</p></div></div>
+    <div class="form-grid">
+      <label>Hostname<input name="hostname" value="{{value('hostname')}}" placeholder="Computer or device hostname"></label>
+      <label>IP Address<input name="ip_address" value="{{value('ip_address')}}" placeholder="Example: 192.0.2.20"></label>
+      <label>MAC Address<input name="mac_address" value="{{value('mac_address')}}" placeholder="Network MAC address"></label>
+      <label>Operating System<input name="operating_system" value="{{value('operating_system')}}" placeholder="Windows, Linux, Android..."></label>
+      <label>OS Version<input name="os_version" value="{{value('os_version')}}" placeholder="Version or build"></label>
+      <label>Processor<input name="processor" value="{{value('processor')}}" placeholder="CPU model"></label>
+      <label>RAM<input name="ram" value="{{value('ram')}}" placeholder="Example: 16 GB"></label>
+      <label>Storage<input name="storage" value="{{value('storage')}}" placeholder="Example: 1 TB SSD"></label>
+      <label>System Domain<input name="mail_domain" value="{{value('mail_domain')}}" placeholder="System or Active Directory domain"></label>
+    </div>
+  </section>
+
+  <section class="form-section">
+    <div class="section-heading"><div><h2>Monitor Specifications</h2><p>Optional display hardware information.</p></div></div>
+    <div class="form-grid">
+      <label>Monitor Make<input name="monitor_make" value="{{value('monitor_make')}}"></label>
+      <label>Monitor Model<input name="monitor_model" value="{{value('monitor_model')}}"></label>
+      <label>Monitor Serial Number<input name="monitor_serial_number" value="{{value('monitor_serial_number')}}"></label>
+    </div>
+  </section>
+
+  <section class="form-section">
+    <div class="section-heading"><div><h2>Purchase, Warranty and Location</h2><p>Commercial ownership and physical placement information.</p></div></div>
+    <div class="form-grid">
+      <label>Vendor{{select('vendor_id',vendors,asset.vendor_id if asset else none,false,true)}}</label>
+      <label>Purchase Date<input type="date" name="purchase_date" value="{{asset.purchase_date if asset and asset.purchase_date else ''}}"></label>
+      <label>Purchase Cost<input type="number" min="0" step="0.01" name="purchase_cost" value="{{asset.purchase_cost if asset and asset.purchase_cost is not none else ''}}"></label>
+      <label>Warranty Expiry<input type="date" name="warranty_expiry" value="{{asset.warranty_expiry if asset and asset.warranty_expiry else ''}}"></label>
+      <label>Invoice Number<input name="invoice_number" value="{{value('invoice_number')}}"></label>
+      <label>Location*{{select('location_id',locations,asset.location_id if asset else (locations[0].id if locations|length==1 else none),true)}}</label>
+      <label>Asset Department{{select('department_id',departments,asset.department_id if asset else none,false,true)}}</label>
+    </div>
+  </section>
+
+  <section class="form-section">
+    <div class="section-heading"><div><h2>Notes and Audit</h2><p>The edit reason is recorded in the asset audit history.</p></div></div>
+    <div class="form-grid">
+      <label class="wide">Remarks<textarea name="remarks">{{value('remarks')}}</textarea></label>
+      {%if asset%}<label class="wide">Reason for edit<textarea name="reason" required placeholder="Explain why these asset details are changing"></textarea></label>{%endif%}
+    </div>
+  </section>
+
+  <div class="form-actions">
+    <a class="btn secondary" href="{{url_for('assets.profile',system_asset_reference=asset.system_asset_reference) if asset else url_for('assets.list_assets')}}">Cancel</a>
+    <button type="submit">{{'Save All Changes' if asset else 'Create Asset'}}</button>
+  </div>
+</form>
+{% endblock %}

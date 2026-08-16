@@ -1,0 +1,7 @@
+{% extends 'base.html' %}{% block content %}
+<div class="page-title"><div><h1>Blocked Employees</h1><p>Active employees temporarily restricted from receiving new assets. Employees who left the organization belong under Inactive status.</p></div></div>
+<div class="split">
+  <section class="panel"><form method="post"><input type="hidden" name="csrf_token" value="{{csrf_token()}}"><label>Active Employee<select name="employee_id" required>{%for e in eligible%}<option value="{{e.id}}">{{e.name}} - {{e.employee_code}}</option>{%else%}<option value="">No eligible active employees</option>{%endfor%}</select></label><label>Reason<textarea name="reason" required></textarea></label><label>Blocked By<input name="blocked_by" required></label><button>Block Employee</button></form></section>
+  <section class="panel table-wrap"><table><thead><tr><th>Employee</th><th>Reason</th><th>Date</th><th>Blocked By</th><th></th></tr></thead><tbody>{%for e in employees%}<tr><td><a href="{{url_for('masters.employee_history',item_id=e.id)}}">{{e.name}}</a></td><td>{{e.blocked_reason}}</td><td>{{e.blocked_date}}</td><td>{{e.blocked_by}}</td><td><form method="post" action="{{url_for('masters.employee_unblock',item_id=e.id)}}"><input type="hidden" name="csrf_token" value="{{csrf_token()}}"><input name="reason" required placeholder="Reason"><button>Unblock</button></form></td></tr>{%else%}<tr><td colspan="5">No active employees are currently blocked.</td></tr>{%endfor%}</tbody></table></section>
+</div>
+{%endblock%}

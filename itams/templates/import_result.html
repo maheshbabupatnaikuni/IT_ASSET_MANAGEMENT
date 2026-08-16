@@ -1,0 +1,15 @@
+﻿{% extends 'base.html' %}{% block content %}
+<div class="page-title"><div><h1>Import Complete</h1><p>{{result.filename}}</p></div><a class="btn" href="{{url_for('admin.import_inventory')}}">Import Another File</a></div>
+<div class="cards">
+<div class="card"><b>{{result.total_rows}}</b><span>Total Rows Read</span></div>
+<div class="card green"><b>{{result.assets_added}}</b><span>Assets Added</span></div>
+<div class="card"><b>{{result.employee_only_rows or 0}}</b><span>Employee-only Rows</span></div>
+<div class="card"><b>{{result.empty_rows}}</b><span>Empty Rows</span></div>
+<div class="card"><b>{{result.warnings|length}}</b><span>Notes</span></div>
+</div>
+<section class="panel"><h3>Sheets Read</h3><p>{{result.sheets|join(', ')}}</p></section>
+{%if result.warnings%}<details><summary><small>Warnings ({{result.warnings|length}})</small></summary><ul>{%for warning in result.warnings%}<li><small>{{warning}}</small></li>{%endfor%}</ul></details>{%endif%}
+{%if result.skipped%}<details><summary><small>Empty rows ({{result.skipped|length}})</small></summary><ul>{%for reason in result.skipped%}<li><small>{{reason}}</small></li>{%endfor%}</ul></details>{%endif%}
+{%endblock%}
+
+

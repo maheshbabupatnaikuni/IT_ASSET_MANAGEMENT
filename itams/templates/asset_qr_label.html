@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>{{asset.display_reference}} Asset Label</title>
+  <style>
+    *{box-sizing:border-box}body{font-family:Arial,sans-serif;margin:20px;color:#172033}
+    .toolbar{margin-bottom:18px}.label{width:88mm;min-height:48mm;border:1px solid #222;border-radius:3mm;padding:4mm;display:grid;grid-template-columns:28mm 1fr;gap:4mm;align-items:center}
+    .label img.qr{width:27mm;height:27mm}.brand{color:#203f78;font-size:15px;font-weight:800;letter-spacing:.2px;margin-bottom:2mm}.brand span{color:#1479b8}.ref{font-size:17px;font-weight:700;letter-spacing:.4px}.meta{font-size:11px;margin-top:2mm;line-height:1.4}.muted{color:#555}
+    @media print{body{margin:0}.toolbar{display:none}.label{border:1px solid #000;break-inside:avoid}}
+    @media(max-width:480px){.label{width:100%;grid-template-columns:90px 1fr}.label img.qr{width:86px;height:86px}}
+  </style>
+</head>
+<body>
+  <div class="toolbar"><button onclick="window.print()">Open Print Preview</button> <button onclick="window.close()">Close</button></div>
+  <section class="label">
+    <img class="qr" src="{{url_for('assets.qr_image',system_asset_reference=asset.system_asset_reference)}}" alt="Asset QR code">
+    <div>
+      <div class="brand">RAY <span>IT</span> MANAGEMENT</div>
+      <div class="ref">{{asset.display_reference}}</div>
+      <div class="meta">
+        <b>Asset Tag:</b> {{asset.display_asset_tag or 'Not Available'}}<br>
+        <b>Category:</b> {{asset.category.name if asset.category else 'Not Available'}}<br>
+        <b>Model:</b> {{asset.model or 'Not Available'}}<br>
+        <b>Serial:</b> {{asset.source_serial_number or asset.serial_number or 'Not Available'}}
+      </div>
+      <div class="meta muted">Scan to open the authorized ITAMS asset profile.</div>
+    </div>
+  </section>
+</body>
+</html>

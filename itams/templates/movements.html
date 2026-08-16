@@ -1,0 +1,3 @@
+﻿{% extends 'base.html' %}{% block content %}<div class="page-title"><div><h1>Movement Log</h1><p>Immutable asset assignment and lifecycle history</p></div></div><section class="panel table-wrap"><table><thead><tr><th>Movement ID</th><th>Date</th><th>Asset</th><th>Action</th><th>Previous User</th><th>New User</th><th>Updated By</th><th>Remarks</th></tr></thead><tbody>{%for m in movements%}<tr><td>{{m.movement_id}}</td><td>{{m.date|local_datetime}}</td><td>{{m.asset.asset_tag}}</td><td><span class="badge">{{m.action}}</span></td><td>{{m.previous_user or '-'}}</td><td>{{m.new_user or '-'}}</td><td>{{m.updated_by}}</td><td>{{m.remarks or '-'}}</td></tr>{%endfor%}</tbody></table></section>{% endblock %}
+
+

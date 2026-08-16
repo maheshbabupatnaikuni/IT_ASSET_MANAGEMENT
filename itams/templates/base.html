@@ -1,0 +1,155 @@
+{% from "_ui_macros.html" import icon, product_brand %}
+<!doctype html>
+<html lang="en" data-theme="system">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>{%block title%}{{app_setting('ui.application_name','IT Asset Management')}}{%endblock%}</title>
+  <link rel="icon" href="{{url_for('static',filename='img/itams-mark.svg')}}">
+  <script>document.documentElement.dataset.theme=localStorage.getItem("itams-theme")||"system";document.documentElement.dataset.density=localStorage.getItem("itams-density")||"comfortable";</script>
+  <link rel="stylesheet" href="{{url_for('static',filename='css/app.css')}}">
+  <link rel="stylesheet" href="{{url_for('static',filename='css/enhancements.css')}}">
+  <link rel="stylesheet" href="{{url_for('static',filename='css/design-system.css')}}?v={{app_version}}-workspace-20260803">
+  <link rel="stylesheet" href="{{url_for('static',filename='css/print.css')}}" media="print">
+  <style>:root{--primary:{{app_setting('ui.primary_color','#203f78')}};--focus:{{app_setting('ui.primary_color','#203f78')}}}.product-mark i:first-child{background:{{app_setting('ui.accent_color','#76b82a')}}}</style>
+</head>
+<body data-ui-module="{{ui_module()}}">
+<script id="ui-field-configuration" type="application/json">{{ui_field_configuration()|tojson}}</script>
+<a class="skip-link" href="#main-content">Skip to main content</a>
+<div class="nav-overlay" data-nav-close aria-hidden="true"></div>
+<aside id="app-sidebar" aria-label="Primary navigation">
+  <div class="brand">
+    {{product_brand()}}
+  </div>
+  <nav class="sidebar-nav">
+    {%if can('dashboard.view')%}<a class="nav-link {%if request.endpoint=='main.dashboard'%}active{%endif%}" href="{{url_for('main.dashboard')}}" title="Dashboard">{{icon('dashboard')}}<span>Dashboard</span></a>{%endif%}
+
+    {%set asset_group=request.blueprint in ['assets','masters'] and request.endpoint!='assets.new'%}
+    {%if can('asset.view') or can('employee.view')%}
+    <details class="nav-group" {%if asset_group%}open{%endif%}>
+      <summary>{{icon('assets')}}<span>Asset Management</span>{{icon('chevron')}}</summary>
+      <div>
+        {%if can('asset.view')%}<a class="{%if request.endpoint=='assets.list_assets'%}active{%endif%}" href="{{url_for('assets.list_assets')}}">All Assets</a>{%endif%}
+        {%if can('asset.available.view')%}<a class="{%if request.endpoint=='assets.available'%}active{%endif%}" href="{{url_for('assets.available')}}">Available Assets</a>{%endif%}
+        {%if can('asset.blocked.view')%}<a class="{%if request.endpoint=='assets.blocked'%}active{%endif%}" href="{{url_for('assets.blocked')}}">Blocked Assets</a>{%endif%}
+        {%if can('employee.view')%}<a class="{%if request.endpoint=='masters.employees'%}active{%endif%}" href="{{url_for('masters.employees')}}">Employees</a>{%endif%}
+        {%if can('employee.block')%}<a class="{%if request.endpoint=='masters.blocked_employees'%}active{%endif%}" href="{{url_for('masters.blocked_employees')}}">Blocked Employees</a>{%endif%}
+      </div>
+    </details>
+    {%endif%}
+
+    {%set operation_group=request.blueprint in ['operations','requests'] or request.endpoint=='assets.new'%}
+    {%if can('asset.add') or can('assignment.view') or can('assignment.request.create') or can('assignment.return') or can('assignment.transfer') or can('repair.view') or can('assignment.history.view') or can('asset.scrap')%}
+    <details class="nav-group" {%if operation_group%}open{%endif%}>
+      <summary>{{icon('operations')}}<span>Assignment &amp; Operations</span>{{icon('chevron')}}</summary>
+      <div>
+        {%if can('asset.add')%}<a class="{%if request.endpoint=='assets.new'%}active{%endif%}" href="{{url_for('assets.new')}}">Add Asset</a>{%endif%}
+        {%if can('assignment.view') or can('assignment.request.create')%}<a class="{%if request.endpoint=='requests.index'%}active{%endif%}" href="{{url_for('requests.index')}}">Assignment Requests</a>{%endif%}
+        {%if can('assignment.return')%}<a class="{%if request.endpoint=='operations.return_asset'%}active{%endif%}" href="{{url_for('operations.return_asset')}}">Return Asset</a>{%endif%}
+        {%if can('assignment.transfer')%}<a class="{%if request.endpoint=='operations.transfer'%}active{%endif%}" href="{{url_for('operations.transfer')}}">Transfer Asset</a>{%endif%}
+        {%if can('location.approve.own') or can('location.approve.all')%}<a class="{%if request.endpoint=='operations.location_approvals'%}active{%endif%}" href="{{url_for('operations.location_approvals')}}">Location Approvals</a>{%endif%}
+        {%if current_role()=='Super Admin' or (g.current_user and g.current_user.approval_level=='Location Admin' and can('location.approve.own'))%}<a class="{%if request.endpoint in ['operations.action_approvals','operations.action_request_detail']%}active{%endif%}" href="{{url_for('operations.action_approvals')}}">Action Approvals</a>{%endif%}
+        {%if g.current_user and g.current_user.approval_level=='Location User'%}<a class="{%if request.endpoint=='operations.my_requests'%}active{%endif%}" href="{{url_for('operations.my_requests')}}">My Requests</a>{%endif%}
+        {%if can('repair.view')%}<a class="{%if request.endpoint=='operations.repairs'%}active{%endif%}" href="{{url_for('operations.repairs')}}">Repairs</a>{%endif%}
+        {%if can('asset.scrap')%}<a class="{%if request.endpoint=='operations.scrap'%}active{%endif%}" href="{{url_for('operations.scrap')}}">Scrap Asset</a>{%endif%}
+        {%if can('assignment.history.view')%}<a class="{%if request.endpoint=='operations.movements'%}active{%endif%}" href="{{url_for('operations.movements')}}">Movement Log</a>{%endif%}
+      </div>
+    </details>
+    {%endif%}
+
+    {%if can('infrastructure.view')%}
+    <details class="nav-group" {%if request.blueprint=='infrastructure'%}open{%endif%}>
+      <summary>{{icon('infrastructure')}}<span>Infrastructure</span><span class="sr-only">INFRASTRUCTURE</span>{{icon('chevron')}}</summary>
+      <div>
+        <a class="{%if request.endpoint=='infrastructure.index'%}active{%endif%}" href="{{url_for('infrastructure.index')}}">Infrastructure Devices</a>
+        {%if can('infrastructure.add')%}<a class="{%if request.endpoint=='infrastructure.new'%}active{%endif%}" href="{{url_for('infrastructure.new')}}">Add Infrastructure</a>{%endif%}
+        {%if can('infrastructure.report.view')%}<a class="{%if request.endpoint=='infrastructure.reports'%}active{%endif%}" href="{{url_for('infrastructure.reports')}}">Infrastructure Reports</a>{%endif%}
+        {%if can('infrastructure.qr.manage')%}<a class="{%if request.endpoint=='infrastructure.qr_manage'%}active{%endif%}" href="{{url_for('infrastructure.qr_manage')}}">QR Management</a>{%endif%}
+      </div>
+    </details>
+    {%endif%}
+
+    {%if can('report.view')%}<a class="nav-link {%if request.blueprint=='reports'%}active{%endif%}" href="{{url_for('reports.index')}}" title="Reports">{{icon('reports')}}<span>Reports & Export</span></a>{%endif%}
+
+    {%if can('user.view') or can('role.manage') or can('login_history.view') or can('audit.view') or can('asset.import') or can('master.manage') or can('database.backup')%}
+    <details class="nav-group" {%if request.blueprint=='admin' or request.endpoint=='masters.master_list'%}open{%endif%}>
+      <summary>{{icon('admin')}}<span>Administration</span>{{icon('chevron')}}</summary>
+      <div>
+        {%if can('user.view')%}<a class="{%if request.endpoint=='admin.users'%}active{%endif%}" href="{{url_for('admin.users')}}">User Management</a>{%endif%}
+        {%if can('role.manage')%}<a class="{%if request.endpoint in ['admin.roles','admin.role_edit']%}active{%endif%}" href="{{url_for('admin.roles')}}">Roles & Privileges</a>{%endif%}
+        {%if can('settings.manage')%}<a class="{%if request.endpoint=='admin.application_configuration'%}active{%endif%}" href="{{url_for('admin.application_configuration')}}">Application Configuration</a>{%endif%}
+        {%if can('master.manage')%}<a class="{%if request.endpoint=='masters.master_list' and request.view_args.get('kind')=='departments'%}active{%endif%}" href="{{url_for('masters.master_list',kind='departments')}}">Departments</a>{%endif%}
+        {%if current_role()=='Super Admin'%}<a class="{%if request.endpoint=='admin.locations'%}active{%endif%}" href="{{url_for('admin.locations')}}">Locations</a>{%endif%}
+        {%if can('master.manage')%}<a class="{%if request.endpoint=='masters.master_list' and request.view_args.get('kind')=='categories'%}active{%endif%}" href="{{url_for('masters.master_list',kind='categories')}}">Categories</a>{%endif%}
+        {%if can('master.manage')%}<a class="{%if request.endpoint=='masters.master_list' and request.view_args.get('kind')=='manufacturers'%}active{%endif%}" href="{{url_for('masters.master_list',kind='manufacturers')}}">Manufacturers</a>{%endif%}
+        {%if can('master.manage')%}<a class="{%if request.endpoint=='masters.master_list' and request.view_args.get('kind')=='vendors'%}active{%endif%}" href="{{url_for('masters.master_list',kind='vendors')}}">Vendors</a>{%endif%}
+        {%if can('login_history.view')%}<a class="{%if request.endpoint=='admin.login_history'%}active{%endif%}" href="{{url_for('admin.login_history')}}">Login History</a>{%endif%}
+        {%if can('audit.view')%}<a class="{%if request.endpoint=='admin.audit_log'%}active{%endif%}" href="{{url_for('admin.audit_log')}}">Audit Trail</a>{%endif%}
+        {%if current_role()=='Super Admin' and can('database.backup')%}<a class="{%if request.endpoint in ['admin.backup_centre','admin.create_recovery_backup','admin.verify_recovery_backup','admin.mark_recovery_tested','admin.prepare_recovery_restore','admin.download_recovery_backup']%}active{%endif%}" href="{{url_for('admin.backup_centre')}}">Backup Centre</a>{%endif%}
+        {%if can('asset.import')%}<a class="{%if request.endpoint=='admin.import_inventory'%}active{%endif%}" href="{{url_for('admin.import_inventory')}}">Import Excel</a>{%endif%}
+      </div>
+    </details>
+    {%endif%}
+  </nav>
+  <button class="sidebar-collapse" type="button" data-sidebar-collapse aria-label="Collapse sidebar">{{icon('collapse')}}<span>Collapse</span></button>
+</aside>
+<main>
+  <div class="print-brand">{{product_brand()}}</div>
+  <header class="topbar">
+    <div class="topbar-start">
+      <button class="icon-button hamburger" type="button" data-nav-toggle aria-controls="app-sidebar" aria-expanded="false" aria-label="Open navigation">{{icon('menu')}}</button>
+      <span class="topbar-context">IT Asset Management</span>
+    </div>
+    {%if can('asset.view') or can('employee.view') or can('infrastructure.view')%}
+    <form class="global-search" action="{{url_for('reports.search')}}" role="search">
+      <label class="sr-only" for="global-search">Search ITAMS</label>
+      {{icon('search')}}<input id="global-search" name="q" value="{{request.args.get('q','') if request.endpoint=='reports.search' else ''}}" placeholder="Search assets, employees, infrastructure..." autocomplete="off">
+      <kbd>/</kbd>
+    </form>
+    {%endif%}
+    <div class="topbar-actions">
+      <details class="quick-create">
+        <summary class="btn">{{icon('add')}}<span>Quick create</span></summary>
+        <div class="menu-popover">
+          {%if can('asset.add')%}<a href="{{url_for('assets.new')}}">New Asset</a>{%endif%}
+          {%if can('employee.add')%}<a href="{{url_for('masters.employees')}}">New Employee</a>{%endif%}
+          {%if can('infrastructure.add')%}<a href="{{url_for('infrastructure.new')}}">New Infrastructure</a>{%endif%}
+          {%if can('assignment.request.create')%}<a href="{{url_for('requests.index')}}">Assignment Request</a>{%endif%}
+          {%if can('asset.import')%}<a href="{{url_for('admin.import_inventory')}}">Import Excel</a>{%endif%}
+        </div>
+      </details>
+      <details class="user-menu">
+        <summary class="user-summary"><span class="avatar" aria-hidden="true">{{(session.user_name or 'U')[:1]|upper}}</span><span><b>{{session.user_name}}</b><small>{{current_role()}} &middot; {{workspace_label()}}</small></span>{{icon('chevron')}}</summary>
+        <div class="menu-popover">
+          <a href="{{url_for('auth.profile')}}">My Profile</a>
+          <a href="{{url_for('auth.password')}}">Change Password</a>
+          <fieldset class="theme-picker"><legend>Appearance</legend><button type="button" data-theme-value="light">Light</button><button type="button" data-theme-value="dark">Dark</button><button type="button" data-theme-value="system">System</button></fieldset>
+          <fieldset class="theme-picker"><legend>Table density</legend><button type="button" data-density-value="comfortable">Comfortable</button><button type="button" data-density-value="compact">Compact</button></fieldset>
+          <a class="logout-link" href="{{url_for('auth.logout')}}">Logout</a>
+        </div>
+      </details>
+    </div>
+  </header>
+  <div id="toast-region" class="toast-region" aria-live="polite" aria-atomic="true">
+    {%with messages=get_flashed_messages(with_categories=true)%}{%for cat,msg in messages%}<div class="toast {{cat}}" role="{{'alert' if cat in ['danger','error'] else 'status'}}" data-toast><span class="toast-icon" aria-hidden="true"></span><span>{{msg}}</span><button type="button" data-toast-close aria-label="Dismiss notification">×</button></div>{%endfor%}{%endwith%}
+  </div>
+  <div id="main-content" class="content" tabindex="-1">
+    {%if request.endpoint!='main.dashboard'%}<nav class="breadcrumb" aria-label="Breadcrumb"><a href="{{url_for('main.dashboard')}}">Dashboard</a><span aria-hidden="true">/</span><span aria-current="page">{{request.blueprint|replace('_',' ')|title}}</span></nav>{%endif%}
+    {%if g.current_user and g.current_user.approval_level=='Location User' and request.method=='GET'%}<div class="toast warning"><span class="toast-icon"></span><span>Location User mode: protected changes are submitted for approval before data is updated.</span></div>{%endif%}
+    {%block content%}{%endblock%}
+  </div>
+  <footer><span>IT Asset Management</span><span>Version {{app_version}}</span></footer>
+</main>
+<dialog id="confirm-dialog" class="confirm-dialog" aria-labelledby="confirm-title">
+  <form method="dialog">
+    <div class="confirm-icon" aria-hidden="true">!</div>
+    <h2 id="confirm-title">Confirm action</h2>
+    <p id="confirm-message">Please confirm you want to continue.</p>
+    <div class="modal-footer"><button value="cancel" class="secondary">Cancel</button><button value="confirm" class="danger">Confirm</button></div>
+  </form>
+</dialog>
+<script src="{{url_for('static',filename='js/app.js')}}" defer></script>
+{%block scripts%}{%endblock%}
+</body>
+</html>

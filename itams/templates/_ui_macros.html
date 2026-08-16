@@ -1,0 +1,32 @@
+{% macro icon(name) -%}
+<svg class="icon" aria-hidden="true" viewBox="0 0 24 24" focusable="false">
+{% if name=='dashboard' %}<path d="M4 13h6V4H4v9Zm0 7h6v-5H4v5Zm10 0h6v-9h-6v9Zm0-16v5h6V4h-6Z"/>
+{% elif name=='assets' %}<path d="M4 6h16v12H4zM8 3h8v3H8zm1 15h6v3H9z"/>
+{% elif name=='operations' %}<path d="M12 2 4 6v6c0 5 3.4 8.6 8 10 4.6-1.4 8-5 8-10V6l-8-4Zm-1 14-4-4 1.4-1.4 2.6 2.6 5-5 1.4 1.4-6.4 6.4Z"/>
+{% elif name=='infrastructure' %}<path d="M3 4h18v6H3V4Zm3 2v2h2V6H6Zm-3 8h18v6H3v-6Zm3 2v2h2v-2H6Zm9-9h3v1h-3V7Zm0 10h3v1h-3v-1Z"/>
+{% elif name=='reports' %}<path d="M5 3h14v18H5V3Zm3 13h2v2H8v-2Zm0-4h2v3H8v-3Zm4-3h2v6h-2V9Zm4-3h2v9h-2V6Z"/>
+{% elif name=='database' %}<path d="M12 3c5 0 8 1.3 8 3s-3 3-8 3-8-1.3-8-3 3-3 8-3Zm-8 6c1.5 1.3 4.4 2 8 2s6.5-.7 8-2v4c0 1.7-3 3-8 3s-8-1.3-8-3V9Zm0 7c1.5 1.3 4.4 2 8 2s6.5-.7 8-2v2c0 1.7-3 3-8 3s-8-1.3-8-3v-2Z"/>
+{% elif name=='admin' %}<path d="M12 2a5 5 0 1 1 0 10 5 5 0 0 1 0-10ZM4 22c0-5 3.6-8 8-8s8 3 8 8H4Z"/>
+{% elif name=='search' %}<path d="m20 19-4.4-4.4A7 7 0 1 0 14.2 16l4.4 4.4L20 19ZM5 10a5 5 0 1 1 10 0 5 5 0 0 1-10 0Z"/>
+{% elif name=='menu' %}<path d="M3 6h18v2H3V6Zm0 5h18v2H3v-2Zm0 5h18v2H3v-2Z"/>
+{% elif name=='add' %}<path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6V5Z"/>
+{% elif name=='collapse' %}<path d="m14 6-6 6 6 6 1.4-1.4-4.6-4.6 4.6-4.6L14 6Z"/>
+{% elif name=='back' %}<path d="m14.7 5.3-1.4-1.4L5.2 12l8.1 8.1 1.4-1.4L8 12l6.7-6.7Z"/>
+{% elif name=='forward' %}<path d="m9.3 18.7 1.4 1.4 8.1-8.1-8.1-8.1-1.4 1.4L16 12l-6.7 6.7Z"/>
+{% elif name=='undo' %}<path d="M8 7V3L2 9l6 6v-4c4.4 0 7.5 1.4 10 4.5-.9-4.5-3.5-8.5-10-8.5Z"/>
+{% elif name=='redo' %}<path d="M16 7V3l6 6-6 6v-4c-4.4 0-7.5 1.4-10 4.5.9-4.5 3.5-8.5 10-8.5Z"/>
+{% else %}<path d="m9 6 6 6-6 6 1.4 1.4L17.8 12 10.4 4.6 9 6Z"/>
+{% endif %}
+</svg>
+{%- endmacro %}
+
+{% macro product_brand(compact=false) -%}
+<span class="product-brand{%if compact%} compact{%endif%}" aria-label="{{app_setting('ui.application_name','IT Asset Management')}}">
+  <span class="product-mark" aria-hidden="true"><i></i><i></i><b>IT</b></span>
+  <span class="product-name"><strong>{{app_setting('ui.application_name','IT Asset Management')}}</strong></span>
+</span>
+{%- endmacro %}
+
+{% macro empty_state(title, description) -%}
+<div class="empty-state"><span class="empty-state-icon" aria-hidden="true">—</span><h3>{{title}}</h3><p>{{description}}</p>{{caller() if caller else ''}}</div>
+{%- endmacro %}

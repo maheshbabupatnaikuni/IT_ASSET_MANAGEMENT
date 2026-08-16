@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-title">
+  <div><h1>User Management</h1><p>Roles define privileges; locations define the records each user can access.</p></div>
+  <div><a class="btn secondary" href="{{url_for('admin.roles')}}">Roles & Privileges</a> <a class="btn secondary" href="{{url_for('admin.locations')}}">Locations</a> <a class="btn secondary" href="{{url_for('admin.login_history')}}">Login History</a></div>
+</div>
+<div class="split">
+  <section class="panel">
+    <h3>Add User</h3>
+    <form method="post">
+      <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+      <label>Full Name<input name="full_name" required></label>
+      <label>Username<input name="username" required></label>
+      <label>Initial Password<input type="password" name="password" minlength="8" required></label>
+      <label>Role<select name="role_id" required>{%for r in roles%}<option value="{{r.id}}">{{r.name}}</option>{%endfor%}</select></label>
+      <label>Approval Level<select name="approval_level"><option>Location User</option><option>Location Admin</option></select><small>A Location Admin must be assigned to exactly one location and may approve that location's requests.</small></label>
+      <fieldset><legend>Assigned Locations</legend><small>Super Admin automatically has all locations.</small>
+        <div class="checkbox-grid">{%for loc in locations%}<label><input type="checkbox" name="location_ids" value="{{loc.id}}"> {{loc.code}} — {{loc.name}}</label>{%endfor%}</div>
+      </fieldset>
+      <label><input type="checkbox" name="active" checked> Active</label>
+      <button>Create User</button>
+    </form>
+  </section>
+  <section class="panel table-wrap">
+    <table><thead><tr><th>User</th><th>Role / Privileges</th><th>Location Scope</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody>{%for u in users%}<tr>
+        <td><b>{{u.username}}</b><br><small>{{u.full_name}}</small></td>
+        <td>{{u.role.name}}<br><small>{{'All permissions' if u.role.name=='Super Admin' else (u.role.permissions|length|string + ' permissions')}} · {{u.approval_level}}</small></td>
+        <td>{%if u.role.name=='Super Admin'%}<span class="badge">All Locations</span>{%else%}{%for loc in u.locations%}<span class="badge">{{loc.code}}</span> {%else%}<span class="badge blocked">No access</span>{%endfor%}{%endif%}</td>
+        <td>{{'Active' if u.active else 'Inactive'}}</td>
+        <td><details><summary>Manage</summary>
+          <form method="post" action="{{url_for('admin.update_user',user_id=u.id)}}">
+            <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+            <label>Username<input name="username" value="{{u.username}}" required></label>
+            <label>Full Name<input name="full_name" value="{{u.full_name}}" required></label>
+            <label>Role<select name="role_id">{%for r in roles%}<option value="{{r.id}}" {%if r.id==u.role_id%}selected{%endif%}>{{r.name}}</option>{%endfor%}</select></label>
+            <label>Approval Level<select name="approval_level"><option {%if u.approval_level=='Location User'%}selected{%endif%}>Location User</option><option {%if u.approval_level=='Location Admin'%}selected{%endif%}>Location Admin</option></select></label>
+            <fieldset><legend>Assigned Locations</legend>{%for loc in locations%}<label><input type="checkbox" name="location_ids" value="{{loc.id}}" {%if loc in u.locations%}checked{%endif%}> {{loc.code}} — {{loc.name}}</label>{%endfor%}</fieldset>
+            <label><input type="checkbox" name="active" {%if u.active%}checked{%endif%}> Active</label>
+            <button>Save Changes</button>
+          </form>
+          <form method="post" action="{{url_for('admin.reset_user_password',user_id=u.id)}}"><input type="hidden" name="csrf_token" value="{{csrf_token()}}"><input type="password" name="password" minlength="8" required placeholder="New temporary password"><button class="secondary">Reset Password</button></form>
+          <form method="post" action="{{url_for('admin.toggle_user',user_id=u.id)}}"><input type="hidden" name="csrf_token" value="{{csrf_token()}}"><button class="secondary">{{'Deactivate' if u.active else 'Activate'}}</button></form>
+          <form method="post" action="{{url_for('admin.delete_user',user_id=u.id)}}"><input type="hidden" name="csrf_token" value="{{csrf_token()}}"><button class="danger" onclick="return confirm('Delete this user? Deactivation is recommended.')">Delete</button></form>
+        </details></td>
+      </tr>{%endfor%}</tbody>
+    </table>
+  </section>
+</div>
+{% endblock %}

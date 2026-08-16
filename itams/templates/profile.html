@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-title"><div><h1>My Profile</h1><p>Your ITAMS identity, role, approval level, and data scope.</p></div></div>
+<section class="panel details">
+  <div><b>Full Name</b><span>{{user.full_name}}</span></div>
+  <div><b>Username</b><span>{{user.username}}</span></div>
+  <div><b>Role</b><span>{{'Super Admin' if user.role.name=='IT Admin' else user.role.name}}</span></div>
+  <div><b>Approval Level</b><span>{{user.approval_level}}</span></div>
+  <div><b>Assigned Locations</b><span>{%if user.role.name=='Super Admin'%}All Locations{%else%}{{user.locations|map(attribute='name')|join(', ') or 'No location access'}}{%endif%}</span></div>
+  <div><b>Status</b><span>{{'Active' if user.active else 'Inactive'}}</span></div>
+  <div><b>Last Login</b><span>{{user.last_login_at|local_datetime if user.last_login_at else '-'}}</span></div>
+</section>
+<a class="btn" href="{{url_for('auth.password')}}">Change Password</a>
+{% endblock %}

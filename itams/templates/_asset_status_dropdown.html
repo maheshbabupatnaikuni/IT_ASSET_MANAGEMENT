@@ -1,0 +1,21 @@
+{%set may_change=can('lost.mark') or can('lost.recover') or can('asset.block') or can('asset.unblock') or can('asset.scrap') or can('repair.add')%}
+{%if may_change%}
+<form method="post" action="{{url_for('assets.quick_status',asset_id=asset.id)}}" class="status-update-form">
+  <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+  <select name="status" aria-label="Asset status">
+    <option value="{{asset.status}}" selected>{{asset.status}} (Current)</option>
+    {%if asset.status in ['Available','Assigned'] and can('repair.add')%}<option value="Under Repair">Under Repair</option>{%endif%}
+    {%if asset.status in ['Available','Assigned'] and can('lost.mark')%}<option value="Lost">Lost</option>{%endif%}
+    {%if asset.status in ['Available','Assigned','Lost'] and can('asset.block')%}<option value="Blocked">Blocked</option>{%endif%}
+    {%if asset.status=='Lost' and can('lost.recover')%}<option value="{{status_restore_target}}">{{status_restore_target}} (Recover)</option>{%endif%}
+    {%if asset.status=='Blocked' and can('asset.unblock')%}<option value="{{status_restore_target}}">{{status_restore_target}} (Unblock)</option>{%endif%}
+    {%if asset.status=='Scrapped' and can('asset.scrap')%}<option value="Disposed">Disposed</option>{%endif%}
+  </select>
+  <input name="reason" required placeholder="Reason for status change" aria-label="Status change reason">
+  <input name="remarks" placeholder="Remarks (optional)" aria-label="Status change remarks">
+  <button class="small">Update</button>
+  {%if asset.status in ['Available','Assigned'] and can('repair.add')%}<small>Selecting Under Repair creates an active repair record; the reason is saved as the initial complaint.</small>{%endif%}
+</form>
+{%else%}
+<span class="badge {{asset.status|lower|replace(' ','-')}}">{{asset.status}}</span>
+{%endif%}

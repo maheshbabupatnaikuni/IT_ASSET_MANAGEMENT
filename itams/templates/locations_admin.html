@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-title"><div><h1>Locations</h1><p>Central locations used by users, assets, employees, infrastructure, approvals, reports, and audits.</p></div></div>
+<div class="split">
+  <section class="panel"><h3>Add Location</h3><form method="post">
+    <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+    <label>Location Name*<input name="name" required></label><label>Location Code*<input name="code" required maxlength="40"></label>
+    <label>Short Name<input name="short_name"></label><label>City<input name="city"></label><label>State<input name="state"></label><label>Country<input name="country"></label>
+    <label>Address<textarea name="address"></textarea></label><label>Remarks<textarea name="remarks"></textarea></label><button>Create Location</button>
+  </form></section>
+  <section class="panel table-wrap"><table><thead><tr><th>Code / Location</th><th>Address</th><th>Status</th><th>Actions</th></tr></thead><tbody>
+  {%for loc in locations%}<tr><td><b>{{loc.code}}</b><br>{{loc.name}}{%if loc.short_name%}<br><small>{{loc.short_name}}</small>{%endif%}</td><td>{{[loc.address,loc.city,loc.state,loc.country]|select|join(', ') or '-'}}</td><td>{{'Active' if loc.active else 'Inactive'}}</td><td><details><summary>Edit</summary><form method="post" action="{{url_for('admin.update_location',location_id=loc.id)}}">
+    <input type="hidden" name="csrf_token" value="{{csrf_token()}}"><label>Name<input name="name" value="{{loc.name}}" required></label><label>Code<input name="code" value="{{loc.code}}" required></label><label>Short Name<input name="short_name" value="{{loc.short_name or ''}}"></label><label>Address<textarea name="address">{{loc.address or ''}}</textarea></label><label>City<input name="city" value="{{loc.city or ''}}"></label><label>State<input name="state" value="{{loc.state or ''}}"></label><label>Country<input name="country" value="{{loc.country or ''}}"></label><label>Remarks<textarea name="remarks">{{loc.remarks or ''}}</textarea></label><label>Reason<input name="reason" required></label><label><input type="checkbox" name="active" {%if loc.active%}checked{%endif%}> Active</label><button>Save</button>
+  </form></details></td></tr>{%else%}<tr><td colspan="4">No locations defined.</td></tr>{%endfor%}</tbody></table></section>
+</div>
+{% endblock %}

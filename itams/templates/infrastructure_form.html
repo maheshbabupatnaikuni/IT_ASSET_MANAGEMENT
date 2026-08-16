@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% macro select(name,items,current,allow_other=false) %}<select name="{{name}}" {%if allow_other%}data-allow-other{%endif%}><option value="">Not specified</option>{%for x in items%}<option value="{{x.id}}" {%if current==x.id%}selected{%endif%}>{{x.name}}</option>{%endfor%}{%if allow_other%}<option value="__other__">Other (enter manually)</option>{%endif%}</select>{%if allow_other%}<input name="{{name}}_other" data-other-input hidden disabled placeholder="Enter another value">{%endif%}{%endmacro%}
+{% block content %}
+<div class="page-title"><div><h1>{{'Edit' if item else 'Add'}} Infrastructure</h1><p>Only category is required. All specifications can be added later.</p></div></div>
+<form method="post" class="panel form-grid" id="infrastructureForm">
+  <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+  {%if item%}<label>Permanent Infrastructure ID<input value="{{item.infrastructure_reference}}" readonly></label>{%endif%}
+  <label>Category*<select name="category_id" id="infrastructureCategory" required><option value="">- Select -</option>{%for x in categories%}<option value="{{x.id}}" data-name="{{x.name}}" {%if item and item.category_id==x.id%}selected{%endif%}>{{x.name}}</option>{%endfor%}</select></label>
+  <label>Location <small>(optional)</small><select name="location_id" id="infrastructureLocation" data-allow-other><option value="">Not specified</option>{%for x in company_locations%}<option value="{{x.id}}" {%if item and item.location_id==x.id%}selected{%endif%}>{{x.code or 'LOC'}} - {{x.name}}</option>{%endfor%}<option value="__other__">Other (enter manually)</option></select><input name="location_id_other" data-other-input hidden disabled placeholder="Enter another location"></label>
+  <label>Room<input name="room" value="{{item.room if item else ''}}"></label>
+  <label class="cctv-main-field" hidden>Network Parameter<input name="spec_network_parameter" value="{{item.specifications.get('network_parameter','') if item and item.category.name=='CCTV Cameras' else ''}}" placeholder="IP, VLAN, switch port or other network details"></label>
+  <label>Serial No<input name="serial_number" value="{{item.serial_number if item else ''}}"></label>
+  <label>Equipment Name<input name="name" value="{{item.name if item else ''}}" placeholder="Optional descriptive name"></label>
+  <label>Status<select name="status">{%for x in status_options%}<option value="{{x}}" {%if (item and item.status==x) or (not item and x=='Planned')%}selected{%endif%}>{{x}}</option>{%endfor%}</select></label>
+  <label>Manufacturer{{select('manufacturer_id',manufacturers,item.manufacturer_id if item else none,true)}}<small class="cisco-ap-note" hidden>Cisco is selected automatically and can still be changed.</small></label>
+  <label>Vendor{{select('vendor_id',vendors,item.vendor_id if item else none,true)}}</label>
+  <label>Model<input name="model" value="{{item.model if item else ''}}"></label>
+  <label>Asset / Internal Tag<input name="asset_tag" value="{{item.asset_tag if item else ''}}"></label>
+  <label>Department{{select('department_id',departments,item.department_id if item else none,true)}}</label>
+  <label>Site<input name="site" value="{{item.site if item else ''}}"></label>
+  <label>Floor<input name="floor" value="{{item.floor if item else ''}}"></label>
+  <label>Condition<input name="condition" value="{{item.condition if item else ''}}"></label>
+  <div class="wide network-registry" id="networkRegistry" hidden><h3>IP Address Registry</h3><p>Optional network addressing. Management IP must be unique.</p><div class="form-grid">
+    <label>Management IP<input name="management_ip" value="{{item.effective_management_ip if item else ''}}" placeholder="Example: 192.0.2.10"><small>Optional. Use documentation-range values for sample records.</small></label>
+    <label>Subnet / CIDR<input name="subnet" value="{{item.subnet if item else ''}}" placeholder="Example: 192.0.2.0/24"></label>
+    <label>Gateway<input name="gateway" value="{{item.gateway if item else ''}}"></label>
+    <label>DNS<input name="dns" value="{{item.dns if item else ''}}" placeholder="One or more DNS servers"></label>
+    <label>VLAN<input name="network_vlan" value="{{item.network_vlan if item else ''}}"></label>
+    <label>MAC Address<input name="mac_address" value="{{item.mac_address if item else ''}}" placeholder="Enter a synthetic value only"></label>
+    <label>Address Assignment<select name="ip_assignment"><option value="">Not specified</option><option {%if item and item.ip_assignment=='DHCP'%}selected{%endif%}>DHCP</option><option {%if item and item.ip_assignment=='Static'%}selected{%endif%}>Static</option></select></label>
+  </div></div>
+  <label>Purchase Date<input type="date" name="purchase_date" value="{{item.purchase_date if item and item.purchase_date else ''}}"></label>
+  <label>Installation Date<input type="date" name="installation_date" value="{{item.installation_date if item and item.installation_date else ''}}"></label>
+  <label>Warranty Expiry<input type="date" name="warranty_expiry" value="{{item.warranty_expiry if item and item.warranty_expiry else ''}}"></label>
+  <label>AMC Start Date<input type="date" name="amc_start_date" value="{{item.amc_start_date if item and item.amc_start_date else ''}}"></label>
+  <label>AMC Expiry<input type="date" name="amc_expiry" value="{{item.amc_expiry if item and item.amc_expiry else ''}}"></label>
+  <label>Purchase Cost<input type="number" min="0" step="0.01" name="purchase_cost" value="{{item.purchase_cost if item and item.purchase_cost is not none else ''}}"></label>
+  <label>Invoice Number<input name="invoice_number" value="{{item.invoice_number if item else ''}}"></label>
+  <div class="wide category-specifications"><h3>Category-Specific Specifications</h3><p id="specHelp">Select a category to show its optional specification fields.</p>
+    {%for category_name,fields in specification_fields.items()%}<div class="spec-group" data-category="{{category_name}}" hidden><h4>{{category_name}}</h4><div class="form-grid">{%for code,label in fields if not (category_name=='CCTV Cameras' and code=='network_parameter')%}<label>{{label}}<input name="spec_{{code}}" value="{{item.specifications.get(code,'') if item and item.category.name==category_name else ''}}"></label>{%endfor%}</div></div>{%endfor%}
+  </div>
+  <label class="wide">Remarks<textarea name="remarks">{{item.remarks if item else ''}}</textarea></label>
+  {%if item%}<label class="wide">Reason for Edit*<textarea name="reason" required></textarea></label>{%endif%}
+  <div class="wide"><button>Save Infrastructure</button> <a class="btn secondary" href="{{url_for('infrastructure.profile',reference=item.infrastructure_reference) if item else url_for('infrastructure.index')}}">Cancel</a></div>
+</form>
+<script>
+const categorySelect=document.getElementById('infrastructureCategory');
+function showInfrastructureSpecifications(){
+  const selected=categorySelect.options[categorySelect.selectedIndex];
+  const name=selected?selected.dataset.name:'';
+  document.querySelectorAll('.spec-group').forEach(group=>group.hidden=group.dataset.category!==name);
+  document.getElementById('specHelp').hidden=!!name;
+  document.getElementById('networkRegistry').hidden=!{{network_categories|list|tojson}}.includes(name);
+  document.querySelectorAll('.cctv-main-field').forEach(field=>field.hidden=name!=='CCTV Cameras');
+  const isCiscoAccessPoint=name==='Cisco Access Points';
+  document.querySelectorAll('.cisco-ap-note').forEach(note=>note.hidden=!isCiscoAccessPoint);
+  if(isCiscoAccessPoint){
+    const manufacturer=document.querySelector('[name="manufacturer_id"]');
+    if(manufacturer && !manufacturer.value){
+      const cisco=[...manufacturer.options].find(option=>option.textContent.trim().toLowerCase()==='cisco');
+      if(cisco) manufacturer.value=cisco.value;
+    }
+  }
+}
+categorySelect.addEventListener('change',showInfrastructureSpecifications);showInfrastructureSpecifications();
+</script>
+{% endblock %}

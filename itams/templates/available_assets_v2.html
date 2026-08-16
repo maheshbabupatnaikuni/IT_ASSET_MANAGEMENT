@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-title">
+ <div><h1>Available Assets</h1><p>{{assets|length}} assets eligible for assignment</p></div>
+ {%if can('asset.export')%}<div><a class="btn" href="?{{request.query_string.decode()}}&format=excel">Excel</a> <a class="btn secondary" href="?{{request.query_string.decode()}}&format=csv">CSV</a> <a class="btn secondary" href="?{{request.query_string.decode()}}&format=pdf">PDF</a> <button onclick="window.print()">Print</button></div>{%endif%}
+</div>
+<section class="panel">
+ <form class="filter-grid">
+  <input name="asset_tag" value="{{request.args.get('asset_tag','')}}" placeholder="Asset tag">
+  <input name="serial" value="{{request.args.get('serial','')}}" placeholder="Serial number">
+  <input name="model" value="{{request.args.get('model','')}}" placeholder="Model">
+  <select name="category"><option value="">All categories</option>{%for x in categories%}<option value="{{x.id}}">{{x.name}}</option>{%endfor%}</select>
+  <select name="brand"><option value="">All brands</option>{%for x in manufacturers%}<option value="{{x.id}}">{{x.name}}</option>{%endfor%}</select>
+  <select name="location"><option value="">All locations</option>{%for x in locations%}<option value="{{x.id}}">{{x.name}}</option>{%endfor%}</select>
+  <input name="condition" placeholder="Condition"><input type="date" name="purchase_from"><input type="date" name="purchase_to">
+  <select name="warranty"><option value="">Any warranty</option><option value="expiring">Expiring in 30 days</option></select><button>Filter</button>
+ </form>
+ <div class="table-wrap"><table><thead><tr><th>Asset Tag</th><th>Category</th><th>Brand / Model</th><th>Serial</th><th>Location</th><th>Condition</th><th>Warranty</th><th>Actions</th></tr></thead><tbody>
+ {%for a in assets%}<tr><td>{{a.asset_tag}}</td><td>{{a.category.name}}</td><td>{{a.manufacturer.name if a.manufacturer else '-'}} {{a.model or ''}}</td><td>{{a.serial_number or '-'}}</td><td>{{a.location.name if a.location else '-'}}</td><td>{{a.condition or '-'}}</td><td>{{a.warranty_expiry or '-'}}</td><td><a href="{{url_for('assets.detail',asset_id=a.id)}}">View</a> - <a href="{{url_for('assets.status_page',asset_id=a.id)}}"><b>Change Status</b></a></td></tr>{%else%}<tr><td colspan="8" class="empty">No available assets match these filters.</td></tr>{%endfor%}
+ </tbody></table></div>
+</section>
+{%endblock%}

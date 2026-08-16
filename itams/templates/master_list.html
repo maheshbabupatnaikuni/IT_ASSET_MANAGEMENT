@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-title"><div><h1>{{title}}</h1><p>Manage {{title|lower}}</p></div></div>
+<div class="split">
+  <section class="panel">
+    <h3>Add {{title[:-1]}}</h3>
+    <form method="post">
+      <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+      <label>Name<input name="name" required></label>
+      {% if is_vendor %}
+      <label>Contact person<input name="contact_person"></label>
+      <label>Email<input type="email" name="email"></label>
+      <label>Phone<input name="phone"></label>
+      <label>Services / Supported Systems<textarea name="services"></textarea></label>
+      {% endif %}
+      <label>Current password<input type="password" name="current_password" required autocomplete="current-password"></label>
+      <button>Save</button>
+    </form>
+  </section>
+  <section class="panel table-wrap">
+    <table>
+      <thead><tr><th>Name</th>{% if is_vendor %}<th>Contact</th><th>Services / Systems</th>{% endif %}<th>Status</th><th>Action</th></tr></thead>
+      <tbody>
+      {% for x in items %}
+      <tr>
+        <td>{{x.name}}</td>
+        {% if is_vendor %}<td>{{x.contact_person or '-'}}<br><small>{{x.email or '-'}} / {{x.phone or '-'}}</small></td><td>{{x.services or '-'}}</td>{% endif %}
+        <td>{{'Active' if x.active else 'Inactive'}}</td>
+        <td>
+          <details><summary>Edit</summary>
+            <form method="post" action="{{url_for('masters.master_update',kind=kind,item_id=x.id)}}">
+              <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+              <input name="name" value="{{x.name}}" required>
+              {% if is_vendor %}
+              <input name="contact_person" value="{{x.contact_person or ''}}">
+              <input name="email" type="email" value="{{x.email or ''}}">
+              <input name="phone" value="{{x.phone or ''}}">
+              <textarea name="services" placeholder="Services / supported systems">{{x.services or ''}}</textarea>
+              {% endif %}
+              <label><input type="checkbox" name="active" {%if x.active%}checked{%endif%}> Active</label>
+              <input name="reason" required placeholder="Reason for update">
+              <input type="password" name="current_password" required placeholder="Current password">
+              <button>Update</button>
+            </form>
+            <form method="post" action="{{url_for('masters.master_delete',kind=kind,item_id=x.id)}}">
+              <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+              <input name="reason" required placeholder="Reason for deletion">
+              <input type="password" name="current_password" required placeholder="Current password">
+              <button class="danger" onclick="return confirm('Delete this record?')">Delete</button>
+            </form>
+          </details>
+        </td>
+      </tr>
+      {% else %}<tr><td colspan="5" class="empty">No records found.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </section>
+</div>
+{% endblock %}

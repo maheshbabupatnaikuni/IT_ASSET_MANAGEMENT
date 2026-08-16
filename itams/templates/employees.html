@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% macro department_select(current=none) %}
+<select name="department_id" data-allow-other>
+  <option value="">Not specified</option>
+  {%for x in departments%}<option value="{{x.id}}" {%if current==x.id%}selected{%endif%}>{{x.name}}</option>{%endfor%}
+  <option value="__other__">Other (enter manually)</option>
+</select>
+<input name="department_id_other" data-other-input hidden disabled placeholder="Enter another department">
+{% endmacro %}
+{% block content %}
+<div class="page-title"><div><h1>Employees</h1><p>Employee directory and assignment owners</p></div></div>
+<div class="split">
+  {%if can('employee.add')%}
+  <section class="panel">
+    <h3>Add employee</h3>
+    <form method="post">
+      <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+      <label>Employee ID <small>(optional)</small><input name="employee_code" placeholder="Leave blank to generate automatically"></label>
+      <label>Full name<input name="name" required></label>
+      <label>Designation<input name="designation"></label>
+      <label>Email<input type="email" name="email"></label>
+      <label>Phone<input name="phone"></label>
+      <label>Department{{department_select()}}</label>
+      <label>Location<select name="location_id" required><option value="">Select</option>{%for x in locations%}<option value="{{x.id}}">{{x.name}}</option>{%endfor%}</select></label>
+      <label>Current password<input type="password" name="current_password" required></label>
+      <button>Save employee</button>
+    </form>
+  </section>
+  {%endif%}
+  <section class="panel table-wrap">
+    <form class="search"><input name="q" value="{{q}}" placeholder="Search name or employee ID"><select name="status"><option value="">All employment statuses</option><option value="Active" {%if status_filter=='Active'%}selected{%endif%}>Active (working)</option><option value="Inactive" {%if status_filter=='Inactive'%}selected{%endif%}>Inactive (left organization)</option></select><select name="asset_filter"><option value="">Any asset ownership</option><option value="without" {%if asset_filter=='without'%}selected{%endif%}>Employees without assets</option></select><button>Search / Filter</button></form>
+    <table>
+      <thead><tr><th>Employee</th><th>Department</th><th>Location</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody>{%for e in employees%}<tr>
+        <td><b>{{e.name}}</b><br><small>{{e.employee_code}} - {{e.designation or ''}}</small></td>
+        <td>{{e.department.name}}</td><td>{{e.location.name}}</td><td>{{'Blocked' if e.blocked else e.employment_status}}</td>
+        <td>{%if can('employee.history.view')%}<a href="{{url_for('masters.employee_history',item_id=e.id)}}">History</a>{%endif%}{%if can('employee.edit')%} <button type="button" class="small employee-edit-button" data-id="{{e.id}}" data-code="{{e.employee_code}}" data-name="{{e.name}}" data-designation="{{e.designation or ''}}" data-email="{{e.email or ''}}" data-phone="{{e.phone or ''}}" data-department="{{e.department_id}}" data-location="{{e.location_id}}" data-status="{{e.employment_status}}">Edit</button>{%endif%}</td>
+      </tr>{%else%}<tr><td colspan="5">No employees found.</td></tr>{%endfor%}</tbody>
+    </table>
+  </section>
+</div>
+<dialog id="employeeEditDialog" class="employee-modal">
+  <form method="post" id="employeeEditForm">
+    <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+    <div class="modal-heading"><h2>Edit Employee</h2><button type="button" class="modal-close" aria-label="Close">X</button></div>
+    <div class="modal-grid">
+      <label>Employee ID <small>(optional)</small><input name="employee_code" placeholder="Leave blank to keep the current ID"></label>
+      <label>Full name<input name="name" required></label>
+      <label>Designation<input name="designation"></label>
+      <label>Email<input type="email" name="email"></label>
+      <label>Phone<input name="phone"></label>
+      <label>Department{{department_select()}}</label>
+      <label>Location<select name="location_id" required><option value="">Select</option>{%for x in locations%}<option value="{{x.id}}">{{x.name}}</option>{%endfor%}</select></label>
+      <label>Employment Status<select name="employment_status" required><option value="Active">Active (working)</option><option value="Inactive">Inactive (left organization)</option></select></label>
+      <label>Reason<input name="reason" required></label>
+      <label>Current password<input type="password" name="current_password" required></label>
+    </div>
+    <div class="modal-footer"><button type="button" class="secondary modal-cancel">Cancel</button><button>Update Employee</button></div>
+  </form>
+</dialog>
+<script>
+const dlg=document.getElementById('employeeEditDialog'),form=document.getElementById('employeeEditForm');
+let dirty=false;
+const closeModal=()=>{if(dirty&&!confirm('Discard unsaved changes?'))return false;dirty=false;dlg.close();return true};
+document.querySelectorAll('.employee-edit-button').forEach(b=>b.addEventListener('click',()=>{
+  if(dlg.open)return;
+  form.action=`{{url_for('masters.employees')}}/${b.dataset.id}/update`;
+  for(const k of ['code','name','designation','email','phone','department','location','status']){
+    const names={code:'employee_code',department:'department_id',location:'location_id',status:'employment_status'};
+    form.elements[names[k]||k].value=b.dataset[k]||'';
+  }
+  form.elements.department_id.dispatchEvent(new Event('change'));
+  form.elements.reason.value='';form.elements.current_password.value='';dirty=false;dlg.showModal();
+}));
+form.addEventListener('input',()=>dirty=true);
+dlg.querySelector('.modal-close').onclick=closeModal;
+dlg.querySelector('.modal-cancel').onclick=closeModal;
+dlg.addEventListener('cancel',e=>{e.preventDefault();closeModal()});
+dlg.addEventListener('click',e=>{if(e.target===dlg)closeModal()});
+form.addEventListener('submit',()=>dirty=false);
+</script>
+{%endblock%}

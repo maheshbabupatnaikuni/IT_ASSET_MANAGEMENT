@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block title %}Access Denied - IT Asset Management{% endblock %}
+{% block content %}
+<section class="panel narrow error-page">
+  <div class="error-code">403</div>
+  <h1>Access Denied</h1>
+  <p>{{message or 'Your current role does not allow this action. If you believe you need access, contact the Super Admin.'}}</p>
+  {%if permission%}<p><small>Required permission: <code>{{permission}}</code></small></p>{%endif%}
+  <a class="btn" href="{{url_for('main.dashboard')}}">Return to Dashboard</a>
+</section>
+{%endblock%}

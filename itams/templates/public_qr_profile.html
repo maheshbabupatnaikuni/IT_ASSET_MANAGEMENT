@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>ITAMS QR Profile</title>
+  <link rel="stylesheet" href="{{url_for('static',filename='css/design-system.css')}}">
+  <link rel="stylesheet" href="{{url_for('static',filename='css/app.css')}}">
+</head>
+<body class="public-profile-page">
+  <main class="public-profile-card">
+    <p class="profile-kicker">IT Asset Management</p>
+    <h1>{{record.system_asset_reference if kind=='asset' else record.infrastructure_reference}}</h1>
+    <div class="public-profile-notice">{{kind|title}} profile</div>
+    <dl class="public-profile-grid">
+      <div><dt>Category</dt><dd>{{record.category.name if record.category else 'Not specified'}}</dd></div>
+      <div><dt>Brand</dt><dd>{{record.manufacturer.name if record.manufacturer else 'Not specified'}}</dd></div>
+      <div><dt>Model</dt><dd>{{record.model or 'Not specified'}}</dd></div>
+      <div><dt>Status</dt><dd>{{record.status}}</dd></div>
+      <div><dt>Location</dt><dd>{{(record.location.name if kind=='asset' and record.location else record.company_location.name if kind=='infrastructure' and record.company_location else 'Not specified')}}</dd></div>
+      {%if kind=='asset'%}
+      <div><dt>Operating System</dt><dd>{{record.operating_system or 'Not applicable'}}</dd></div>
+      <div><dt>Processor</dt><dd>{{record.processor or 'Not applicable'}}</dd></div>
+      <div><dt>Memory / Storage</dt><dd>{{record.ram or '—'}} / {{record.storage or '—'}}</dd></div>
+      {%else%}
+      <div><dt>Display name</dt><dd>{{record.display_name}}</dd></div>
+      <div><dt>Condition</dt><dd>{{record.condition or 'Not specified'}}</dd></div>
+      <div><dt>Placement</dt><dd>{{record.floor or '—'}} / {{record.room or '—'}}</dd></div>
+      {%endif%}
+    </dl>
+    <p class="public-profile-footnote">This public page is read-only and intentionally excludes people, credentials, audit details, network configuration, documents, and administrative actions.</p>
+  </main>
+</body>
+</html>

@@ -1,0 +1,6 @@
+{% extends 'base.html' %}{% block content %}
+<div class="page-title"><div><h1>PDF Data Archive Preview</h1><p>{{date_from.strftime('%d %b %Y')}} through {{date_to.strftime('%d %b %Y')}} · Generated {{generated_at.strftime('%d %b %Y %I:%M:%S %p')}}</p></div><a class="btn" href="{{url_for('reports.archive_pdf',date_from=date_from.isoformat(),date_to=date_to.isoformat())}}">Generate &amp; Download PDF Archive</a></div>
+<div class="toast warning"><span class="toast-icon"></span><span>This PDF is a readable audit archive, not a restorable database backup. Password hashes and active-session secrets are excluded.</span></div>
+<section class="panel"><h3>Included Records</h3><table><thead><tr><th>Section</th><th>Records in Date Range</th></tr></thead><tbody>{%for title,count in sections%}<tr><td>{{title}}</td><td>{{count}}</td></tr>{%endfor%}</tbody></table></section>
+<p><a class="btn secondary" href="{{url_for('reports.index')}}">Change Date Range</a></p>
+{% endblock %}

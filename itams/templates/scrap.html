@@ -1,0 +1,43 @@
+{% extends 'base.html' %}{% block title %}Scrap Asset · IT Asset Management{% endblock %}{% block content %}
+<div class="page-title"><div><h1>Asset Scrapping</h1><p>All asset records are visible. Only eligible assets can be scrapped; records and history are always retained.</p></div></div>
+<div class="split">
+  <section class="panel">
+    <h3>Select an asset</h3>
+    <p class="form-help">Available and Lost assets can be scrapped. Assigned assets must be returned, repair work completed, and blocked assets unblocked first.</p>
+    <form method="post">
+      <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+      <label>Asset
+        <select name="asset_id" required>
+          <option value="">Select asset</option>
+          {%for a in assets%}
+            {%set already_scrapped=a.id in scrapped_asset_ids%}
+            {%set eligible=a.status in eligible_statuses and not already_scrapped%}
+            <option value="{{a.id}}" {%if not eligible%}disabled{%endif%}>
+              {{a.display_asset_tag or a.asset_tag}} - {{a.status}} - {{a.category.name}}
+              {%if a.employee%} - {{a.employee.name}}{%endif%}
+              {%if already_scrapped%} - Already recorded{%elif not eligible%} - Action required first{%endif%}
+            </option>
+          {%endfor%}
+        </select>
+      </label>
+      <div class="scrap-status-key" aria-label="Scrap eligibility guidance">
+        <span><i class="key-dot eligible-dot"></i> Eligible now: Available, Lost</span>
+        <span><i class="key-dot action-dot"></i> Visible but unavailable until prerequisite is completed</span>
+      </div>
+      <label>Scrap date<input type="date" name="scrap_date" required></label>
+      <label>Reason<textarea name="reason" required></textarea></label>
+      <label>Disposal method<input name="disposal_method" required></label>
+      <label>Approved by<input name="approved_by" required></label>
+      <label>Remarks<textarea name="remarks"></textarea></label>
+      <button>Scrap Asset</button>
+    </form>
+  </section>
+  <section class="panel">
+    <div class="section-heading"><div><h3>Scrap history</h3><p>{{scraps|length}} recorded assets</p></div></div>
+    <div class="table-wrap"><table><thead><tr><th>Date</th><th>Asset</th><th>Method</th><th>Approved by</th></tr></thead><tbody>
+      {%for s in scraps%}<tr><td>{{s.scrap_date}}</td><td><a href="{{url_for('assets.profile',system_asset_reference=s.asset.system_asset_reference)}}">{{s.asset.display_asset_tag or s.asset.asset_tag}}</a></td><td>{{s.disposal_method}}</td><td>{{s.approved_by}}</td></tr>
+      {%else%}<tr><td colspan="4" class="empty">No assets have been scrapped.</td></tr>{%endfor%}
+    </tbody></table></div>
+  </section>
+</div>
+{%endblock%}

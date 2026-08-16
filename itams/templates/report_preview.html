@@ -1,0 +1,7 @@
+﻿{% extends 'base.html' %}{% block content %}
+<div class="page-title"><div><h1>{{title}} Preview</h1><p>{{rows|length}} records · {{columns|length}} populated fields · Generated {{generated_at.strftime('%d %b %Y %I:%M:%S %p')}}</p></div><div>{%if can('report.print')%}{%if kind=='inventory'%}<a class="btn" target="_blank" rel="noopener" href="{{url_for('reports.inventory_print_pdf',**request.args)}}">Open PDF Print Preview</a>{%else%}<button onclick="window.print()">Print Preview</button>{%endif%}{%endif%} {%if can('report.export')%}<a class="btn" href="{{url_for('reports.inventory',fmt='download',**request.args) if kind=='inventory' else url_for('reports.dataset',kind=kind,fmt='download',**request.args)}}">Download Complete Excel</a>{%endif%}</div></div>
+<p class="toast info"><span class="toast-icon"></span><span>Only columns populated by at least one selected record are shown. No populated field is omitted.</span></p>
+{%if kind=='inventory'%}<p class="report-print-note">PDF Print Preview starts with the selected location summary and keeps every asset's populated information together on one page.</p>{%endif%}
+<section class="panel table-wrap"><table><thead><tr>{%for c in columns%}<th>{{c}}</th>{%endfor%}</tr></thead><tbody>{%for row in rows%}<tr>{%for c in columns%}<td>{{row[c] if row[c] is not none else '-'}}</td>{%endfor%}</tr>{%else%}<tr><td>No records</td></tr>{%endfor%}</tbody></table></section>
+{% endblock %}
+

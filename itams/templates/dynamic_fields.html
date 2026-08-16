@@ -1,0 +1,3 @@
+﻿{% extends 'base.html' %}{% block content %}<div class="page-title"><div><h1>Dynamic Fields</h1><p>Unknown columns discovered during imports</p></div></div><section class="panel"><table><thead><tr><th>Name</th><th>Entity</th><th>Type</th><th>Status</th></tr></thead><tbody>{%for f in fields%}<tr><td>{{f.name}}</td><td>{{f.entity_type}}</td><td>{{f.data_type}}</td><td>{{'Active' if f.active else 'Inactive'}}</td></tr>{%else%}<tr><td colspan="4">No dynamic fields discovered.</td></tr>{%endfor%}</tbody></table></section>{%endblock%}
+
+

@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-title"><div><h1>Application Configuration</h1><p>Safe no-code control for Super Admin. Changes apply on the next page load and are recorded in the audit trail.</p></div></div>
+<section class="panel">
+  <div class="section-heading"><div><h2>Branding and Login Text</h2><p>Update the product name, login guidance and brand colours without editing templates or CSS.</p></div></div>
+  <form method="post" action="{{url_for('admin.update_brand_configuration')}}" class="form-grid">
+    <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+    <label>Application Name<input name="ui.application_name" value="{{settings.get('ui.application_name',defaults['ui.application_name'])}}" required></label>
+    <label>Login Heading<input name="ui.login_heading" value="{{settings.get('ui.login_heading',defaults['ui.login_heading'])}}" required></label>
+    <label class="wide">Login Help Text<input name="ui.login_help" value="{{settings.get('ui.login_help',defaults['ui.login_help'])}}"></label>
+    <label>Primary Colour<input type="color" name="ui.primary_color" value="{{settings.get('ui.primary_color',defaults['ui.primary_color'])}}"></label>
+    <label>Accent Colour<input type="color" name="ui.accent_color" value="{{settings.get('ui.accent_color',defaults['ui.accent_color'])}}"></label>
+    <div class="wide"><button>Save Branding</button></div>
+  </form>
+</section>
+<section class="panel">
+  <div class="section-heading"><div><h2>Fields</h2><p>Rename, show/hide, require, reorder and explain existing fields. Protected workflow fields remain visible and required.</p></div></div>
+  <nav class="tabs" aria-label="Configuration modules">{%for module in modules%}<a class="btn {{'' if module==selected_module else 'secondary'}}" href="{{url_for('admin.application_configuration',module=module)}}">{{module|title}}</a>{%endfor%}</nav>
+  <div class="table-wrap"><table><thead><tr><th>Field</th><th>Frontend Label</th><th>Visible</th><th>Required</th><th>Order</th><th>Placeholder</th><th>Help Text</th><th>Action</th></tr></thead><tbody>
+  {%for field in fields%}
+    <tr>
+      <td><b>{{field.default_label}}</b><br><small>{{field.field_code}}</small>{%if field.protected%}<br><span class="badge warning">Workflow protected</span>{%endif%}</td>
+      <td><input form="field-{{field.id}}" name="label" value="{{field.label}}" required></td>
+      <td><input form="field-{{field.id}}" type="checkbox" name="visible" {%if field.visible%}checked{%endif%} {%if field.protected%}disabled{%endif%}></td>
+      <td><input form="field-{{field.id}}" type="checkbox" name="required" {%if field.required%}checked{%endif%} {%if field.protected%}disabled{%endif%}></td>
+      <td><input form="field-{{field.id}}" type="number" name="sort_order" min="0" max="9999" value="{{field.sort_order}}" style="width:6rem"></td>
+      <td><input form="field-{{field.id}}" name="placeholder" value="{{field.placeholder or ''}}"></td>
+      <td><input form="field-{{field.id}}" name="help_text" value="{{field.help_text or ''}}"></td>
+      <td><form id="field-{{field.id}}" method="post" action="{{url_for('admin.update_field_configuration',field_id=field.id)}}"><input type="hidden" name="csrf_token" value="{{csrf_token()}}"><input type="hidden" name="default_order" value="{{loop.index*10}}"><button class="small">Save</button> <button class="small secondary" name="action" value="reset">Reset</button></form></td>
+    </tr>
+  {%endfor%}
+  </tbody></table></div>
+</section>
+{%if selected_module=='infrastructure'%}
+<section class="panel">
+  <div class="section-heading"><div><h2>Infrastructure Category Fields</h2><p>Add, rename, reorder or retire optional fields for each infrastructure category. Retiring a field hides it but preserves existing stored values.</p></div></div>
+  <form method="get" class="filter-grid"><input type="hidden" name="module" value="infrastructure"><label>Category<select name="category" onchange="this.form.submit()">{%for category in infrastructure_categories%}<option value="{{category.id}}" {%if category.id==selected_category_id%}selected{%endif%}>{{category.name}}</option>{%endfor%}</select></label><noscript><button>Open</button></noscript></form>
+  <form method="post" action="{{url_for('admin.create_infrastructure_specification')}}" class="form-grid">
+    <input type="hidden" name="csrf_token" value="{{csrf_token()}}"><input type="hidden" name="category_id" value="{{selected_category_id}}">
+    <label>New Field Name<input name="label" required placeholder="Example: Antenna Type"></label>
+    <label>Field Code <small>(optional)</small><input name="field_code" placeholder="Generated from the name"></label>
+    <label>Display Order<input type="number" name="sort_order" min="0" max="9999" value="100"></label>
+    <div><button>Add Optional Field</button></div>
+  </form>
+  <div class="table-wrap"><table><thead><tr><th>Field Code</th><th>Label</th><th>Visible</th><th>Order</th><th>Action</th></tr></thead><tbody>
+  {%for field in infrastructure_fields%}<tr><td><code>{{field.field_code}}</code></td><td><input form="infra-field-{{field.id}}" name="label" value="{{field.label}}" required></td><td><input form="infra-field-{{field.id}}" type="checkbox" name="active" {%if field.active%}checked{%endif%}></td><td><input form="infra-field-{{field.id}}" type="number" name="sort_order" min="0" max="9999" value="{{field.sort_order}}" style="width:6rem"></td><td><form id="infra-field-{{field.id}}" method="post" action="{{url_for('admin.update_infrastructure_specification',field_id=field.id)}}"><input type="hidden" name="csrf_token" value="{{csrf_token()}}"><button class="small">Save</button></form></td></tr>{%else%}<tr><td colspan="5">No fields configured for this category.</td></tr>{%endfor%}
+  </tbody></table></div>
+</section>
+{%endif%}
+<section class="panel"><h2>Dropdown and Reference Values</h2><p>Departments, locations, asset categories, manufacturers and vendors remain editable under Administration. Role privileges remain editable under Roles & Privileges. Workflow statuses and security rules are intentionally protected because changing them can invalidate historical records.</p></section>
+{% endblock %}

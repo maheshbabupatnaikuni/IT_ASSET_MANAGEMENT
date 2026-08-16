@@ -1,0 +1,15 @@
+﻿{% extends 'base.html' %}{% block content %}
+<div class="page-title"><div><h1>Import Excel</h1><p>Simple, forgiving asset import</p></div></div>
+<section class="panel narrow">
+<h3>Upload workbook</h3>
+<p>Usable asset rows are imported immediately. Missing optional fields remain blank, unsupported columns are ignored, and one bad row will not stop the remaining rows.</p>
+<p>Rows containing only employee information are added to Employee data and are not counted as assets or given an asset reference. Rows with genuine hardware details remain eligible for asset import. Repeated or missing identifiers are handled internally and noted quietly in the result.</p>
+<form method="post" enctype="multipart/form-data">
+<input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+<label>Excel file (.xlsx, .xls, .xlsm)<input type="file" name="file" accept=".xlsx,.xls,.xlsm" required></label>
+<button>Import Assets</button>
+</form>
+</section>
+{%endblock%}
+
+

@@ -1,0 +1,22 @@
+name: Application checks
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: python -m pip install -r requirements.txt -r requirements-dev.txt
+      - run: python reset_data.py
+        env:
+          ITAMS_SECRET_KEY: "test-only-ci-secret-key-with-32-characters"
+      - run: python -m pytest
+      - run: python tools/verify_release.py
+      - run: python tools/release_audit.py

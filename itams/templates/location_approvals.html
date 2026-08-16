@@ -1,0 +1,8 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-title"><div><h1>Location Transfer Approvals</h1><p>Cross-location movements remain pending until an authorized Location Admin approves them.</p></div></div>
+<section class="panel table-wrap"><table><thead><tr><th>Request</th><th>From / To</th><th>Reason</th><th>Status</th><th>Decision</th></tr></thead><tbody>
+{%for item in requests%}<tr><td><b>#{{item.id}} · {{item.module}}</b><br><small>Requested by {{item.requested_by}} · {{item.created_at|local_datetime}}</small></td><td>{{item.location.code if item.location else '-'}} → {{item.target_location.code if item.target_location else '-'}}</td><td>{{item.reason}}</td><td><span class="badge {{item.status|lower}}">{{item.status}}</span>{%if item.reviewed_by%}<br><small>{{item.reviewed_by}} · {{item.reviewed_at|local_datetime}}</small>{%endif%}</td><td>{%if item.status=='Pending'%}<form method="post" action="{{url_for('operations.decide_location_transfer',request_id=item.id)}}"><input type="hidden" name="csrf_token" value="{{csrf_token()}}"><textarea name="remarks" required placeholder="Decision remarks"></textarea><button name="decision" value="approve">Approve</button> <button class="danger" name="decision" value="reject">Reject</button></form>{%else%}{{item.review_notes or '-'}}{%endif%}</td></tr>
+{%else%}<tr><td colspan="5">No location transfer requests.</td></tr>{%endfor%}
+</tbody></table></section>
+{% endblock %}

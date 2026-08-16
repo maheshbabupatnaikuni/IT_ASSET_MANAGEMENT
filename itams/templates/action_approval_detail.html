@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% block title %}Action Request #{{item.id}} · IT Asset Management{% endblock %}
+{% block content %}
+<div class="page-title">
+  <div>
+    <h1>Action Request #{{item.id}}</h1>
+    <p>Verify the submitted information before making a decision.</p>
+  </div>
+  <a class="btn secondary" href="{{url_for('operations.action_approvals') if approval_mode else url_for('operations.my_requests')}}">Back to Requests</a>
+</div>
+
+<section class="panel">
+  <div class="detail-grid">
+    <div><small>Requested Action</small><strong>{{action_name}}</strong></div>
+    <div><small>Affected Record</small><strong>{{target_name}}</strong></div>
+    <div><small>Requested By</small><strong>{{item.requested_by}}</strong></div>
+    <div><small>Location</small><strong>{{item.location.name if item.location else 'Not specified'}}</strong></div>
+    <div><small>Submitted</small><strong>{{item.created_at|local_datetime}}</strong></div>
+    <div><small>Status</small><strong><span class="badge {{item.status|lower}}">{{item.status}}</span></strong></div>
+    <div><small>Request Reason</small><strong>{{item.reason or 'Not specified'}}</strong></div>
+  </div>
+</section>
+
+<section class="panel table-wrap">
+  <div class="section-heading">
+    <div>
+      <h2>Submitted Form Details</h2>
+      <p>This is the read-only information entered by the requesting user. Passwords and security tokens are never stored.</p>
+    </div>
+  </div>
+  <table>
+    <thead><tr><th>Field</th><th>Submitted Value</th></tr></thead>
+    <tbody>
+      {% for row in submitted_rows %}
+      <tr><td><strong>{{row.label}}</strong></td><td>{{row.value}}</td></tr>
+      {% else %}
+      <tr><td colspan="2">This request did not contain any submitted form fields.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+
+{% if approval_mode and item.status == 'Pending' %}
+<section class="panel">
+  <div class="section-heading">
+    <div><h2>Approval Decision</h2><p>Approval executes the submitted operation against live data. Rejection makes no live-data change.</p></div>
+  </div>
+  <div class="approval-decision-grid">
+    <form method="post" action="{{url_for('operations.decide_action_request',request_id=item.id)}}" data-confirm="Approve and execute this submitted request?">
+      <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+      <input type="hidden" name="decision" value="approve">
+      <input type="hidden" name="return_to" value="detail">
+      <label for="approval-remarks">Approval Remarks</label>
+      <textarea id="approval-remarks" name="remarks" required placeholder="What did you verify before approving?"></textarea>
+      <label for="approval-password">Current Password</label>
+      <input id="approval-password" type="password" name="current_password" required autocomplete="current-password" placeholder="Required to approve">
+      <button type="submit">Approve &amp; Execute</button>
+    </form>
+    <form method="post" action="{{url_for('operations.decide_action_request',request_id=item.id)}}" data-confirm="Reject this request without changing live data?">
+      <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+      <input type="hidden" name="decision" value="reject">
+      <input type="hidden" name="return_to" value="detail">
+      <label for="rejection-remarks">Rejection Remarks</label>
+      <textarea id="rejection-remarks" name="remarks" required placeholder="Explain what must be corrected"></textarea>
+      <button class="danger" type="submit">Reject Request</button>
+    </form>
+  </div>
+</section>
+{% elif item.status != 'Pending' %}
+<section class="panel">
+  <h2>Decision Record</h2>
+  <div class="detail-grid">
+    <div><small>Decision</small><strong>{{item.status}}</strong></div>
+    <div><small>Reviewed By</small><strong>{{item.reviewed_by or 'Not recorded'}}</strong></div>
+    <div><small>Reviewed At</small><strong>{{item.reviewed_at|local_datetime}}</strong></div>
+    <div><small>Decision Remarks</small><strong>{{item.review_notes or 'Not recorded'}}</strong></div>
+  </div>
+</section>
+{% endif %}
+{% endblock %}
