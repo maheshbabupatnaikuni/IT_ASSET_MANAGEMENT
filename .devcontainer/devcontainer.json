@@ -5,8 +5,7 @@
   "portsAttributes": {
     "5000": {
       "label": "IT Asset Management",
-      "onAutoForward": "openBrowser",
-      "visibility": "public"
+      "onAutoForward": "openBrowser"
     }
   },
   "containerEnv": {
