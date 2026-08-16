@@ -35,6 +35,17 @@ IT Asset Management is a Flask application for tracking workplace assets, assign
 
 The application uses one runtime and does not include production/testing environment switching or deployment controls.
 
+## Run in GitHub Codespaces
+
+[Open IT Asset Management in GitHub Codespaces](https://codespaces.new/maheshbabupatnaikuni/IT_ASSET_MANAGEMENT?quickstart=1)
+
+Create the codespace and wait for setup to finish. Dependencies and sample data are prepared automatically, the application starts on port `5000`, and the forwarded application opens in the browser.
+
+- Username: `admin`
+- Password: `test-only-codespace123`
+
+The forwarded port is private to the codespace owner. Runtime data and credentials remain excluded from the repository.
+
 ## Run in PowerShell
 
 ```powershell
